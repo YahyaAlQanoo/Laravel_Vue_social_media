@@ -35,13 +35,16 @@
                                     class="flex items-center justify-between py-3 px-4 font-medium bg-gray-100 text-gray-900"
                                 >
                                     Update Post
-                                    <button @click="show = false" class="w-8 h-8 rounded-full hover:bg-black/5 transition flex items-center justify-center">
-                                        <XMarkIcon class="w-4 h-4" />
+                                    <button @click="show = false"
+                                            class="w-8 h-8 rounded-full hover:bg-black/5 transition flex items-center justify-center">
+                                        <XMarkIcon class="w-4 h-4"/>
                                     </button>
                                 </DialogTitle>
                                 <div class="p-4">
                                     <PostUserHeader :post="post" :show-time="false" class="mb-4"/>
-                                    <InputTextarea v-model="form.body" class="mb-3 w-full" />
+                                    <ckeditor :editor="editor" v-model="form.body" :config="editorConfig"></ckeditor>
+
+                                    <!--                                    <InputTextarea v-model="form.body" class="mb-3 w-full"/>-->
                                 </div>
 
                                 <div class="py-3 px-4">
@@ -72,9 +75,19 @@ import {
     DialogPanel,
     DialogTitle,
 } from '@headlessui/vue'
-import InputTextarea from "@/Components/InputTextarea.vue";
 import PostUserHeader from "@/Components/app/PostUserHeader.vue";
 import {useForm} from "@inertiajs/vue3";
+
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { Ckeditor } from '@ckeditor/ckeditor5-vue';
+
+const editor = ClassicEditor;
+const editorConfig = {
+    toolbar: [ 'heading',  '|', 'bold', 'italic', '|', 'link', '|', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote'],
+    licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDE5OTY3OTksImp0aSI6IjcwNTZhMGVlLTVmM2ItNDM4My04NDA4LTZiYzM1NDc2ZmNiYyIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6Ijc3ZTc0NDY4In0.F_GHcB2aiZJmS2NPJqSovx6tShHlYwS9hO5NiITropP3-HffJuQV_wiBq3vSK0C2yN-P1zgvFAhoue5UTERTlw'
+
+}
+
 const props = defineProps({
     post: {
         type: Object,
@@ -82,23 +95,29 @@ const props = defineProps({
     },
     modelValue: Boolean
 })
+
 const form = useForm({
     id: null,
     body: ''
 })
+
 const show = computed({
     get: () => props.modelValue,
     set: (value) => emit('update:modelValue', value)
 })
+
 const emit = defineEmits(['update:modelValue'])
+
 watch(() => props.post, () => {
     form.id = props.post.id
     form.body = props.post.body
 })
+
 function closeModal() {
     show.value = false
 }
-function submit(){
+
+function submit() {
     form.put(route('post.update', props.post.id), {
         preserveScroll: true,
         onSuccess: () => {
