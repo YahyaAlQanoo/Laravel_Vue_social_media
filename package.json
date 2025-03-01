@@ -22,6 +22,6 @@
         "@ckeditor/ckeditor5-vue": "^7.3.0",
         "@headlessui/vue": "^1.7.23",
         "@heroicons/vue": "^2.2.0",
-        "ckeditor5": "^44.2.1" // not nessesary
+        "ckeditor5": "^44.2.1" 
     }
 }
