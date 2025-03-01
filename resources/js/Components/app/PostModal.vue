@@ -54,8 +54,10 @@
                     :config="editorConfig"
                   ></ckeditor>
                                     <!-- 🖼️ عرض المرفقات -->
-                <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 my-3">
-                    <template v-for="(myFile, ind) in attachmentFiles" :key="ind">
+                  <div class="grid gap-3 my-3" :class="[
+                      attachmentFiles.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+                  ]">
+                    <template v-for="(myFile, ind) of attachmentFiles">
                       <div class="group aspect-square bg-blue-100 flex flex-col items-center justify-center text-gray-500 relative">
                         <!-- ❌ زر حذف المرفق -->
                         <button
@@ -66,7 +68,7 @@
                         </button>
 
                         <!-- 🔍 عرض الصور -->
-                        <img v-if="isImage(myFile.file)" :src="myFile.url" class="object-cover aspect-square" />
+                        <img v-if="isImage(myFile.file)" :src="myFile.url" class="object-contain aspect-square" />
 
                         <!-- 📎 عرض الملفات غير الصور -->
                         <template v-else>
@@ -165,6 +167,7 @@ const attachmentFiles = ref([])
 const form = useForm({
   id: null,
   body: "",
+  attachments: []
 });
 
 const show = computed({
@@ -184,25 +187,32 @@ watch(
 
 function closeModal() {
   show.value = false;
-  form.reset()
-  attachmentFiles.value = []
+  resetModal();
 }
 
+function resetModal(){
+    form.reset()
+    attachmentFiles.value = []
+}
+
+
+
+
 function submit() {
+    form.attachments = attachmentFiles.value.map(myFile => myFile.file)
+
     if (form.id) {
         form.put(route('post.update', props.post.id), {
             preserveScroll: true,
             onSuccess: () => {
-                show.value = false
-                form.reset()
+                closeModal()
             }
         })
     } else {
         form.post(route('post.create'), {
             preserveScroll: true,
             onSuccess: () => {
-                show.value = false
-                form.reset()
+                closeModal()
             }
         })
     }
