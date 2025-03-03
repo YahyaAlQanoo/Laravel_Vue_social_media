@@ -24,7 +24,7 @@ class CommentResource extends JsonResource
                 "id" => $this->user->id,
                 "name" => $this->user->name,
                 "username" => $this->user->username,
-                "avatar_url" => $this->avatar_path ? Storage::url($this->user->avatar_path) :"/images/avatar.jpg",
+                "avatar_url" => $this->user->avatar_path ? Storage::url($this->user->avatar_path) :"/images/avatar.jpg",
             ]
         ];
     }
