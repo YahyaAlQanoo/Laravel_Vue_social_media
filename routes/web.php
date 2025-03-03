@@ -52,6 +52,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/post/{post}/reaction', [PostController::class, 'postReaction'])
     ->name('post.reaction');
 
+    Route::post('/post/{post}/comment', [PostController::class, 'createComment'])
+    ->name('post.comment.create');
+
+
 
 });
 
