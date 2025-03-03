@@ -53,6 +53,19 @@
                     v-model="form.body"
                     :config="editorConfig"
                   ></ckeditor>
+
+                  <div v-if="showExtensionsText" class="border-l-4 border-amber-500 py-2 px-3 bg-amber-100 mt-3 text-gray-800">
+                    Files must be one of the following extensions <br>
+                    <small>{{attachmentExtensions.join(', ')}}</small>
+                  </div>
+
+                  <div v-if="formErrors.attachments" class="border-l-4 border-red-500 py-2 px-3 bg-red-100 mt-3 text-gray-800">
+                    {{formErrors.attachments}}
+                  </div>
+
+
+
+
                   <!-- 🖼️ عرض المرفقات -->
                   <div
                     class="grid gap-3 my-3"
@@ -63,9 +76,7 @@
                     ]"
                   >
                     <template v-for="(myFile, ind) of computedAttachments">
-                      <div
-                        class="group aspect-square bg-blue-100 flex flex-col items-center justify-center text-gray-500 relative"
-                      >
+                      <div :class="attachmentErrors[ind] ? 'border-red-500' : '' "  class=" border-2 group aspect-square bg-blue-100 flex flex-col items-center justify-center text-gray-500 relative" >
                         <!-- ❌ زر حذف المرفق -->
 
                         <div
@@ -93,11 +104,12 @@
                           :src="myFile.url"
                           class="object-contain aspect-square"
                           :class="myFile.deleted ? 'opacity-50' : ''" />
-                        <div v-else class="flex flex-col justify-center items-center" :class="myFile.deleted ? 'opacity-50' : ''">
+                        <div v-else class="flex flex-col justify-center items-center px-3" :class="myFile.deleted ? 'opacity-50' : ''">
                           <PaperClipIcon class="w-10 h-10 mb-3" />
                           <small class="text-center"> {{ (myFile.file || myFile).name }}</small>
                         </div>
-                      </div>
+                      </div> 
+                      <small class="text-red-500">{{ attachmentErrors[ind] }}</small>
                     </template>
                   </div>
                 </div>
@@ -138,11 +150,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUpdated, reactive, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import {
   BookmarkIcon,
   PaperClipIcon,
   XMarkIcon,
+  ArrowUturnLeftIcon
 } from "@heroicons/vue/24/solid";
 import {
   TransitionRoot,
@@ -152,7 +165,7 @@ import {
   DialogTitle,
 } from "@headlessui/vue";
 import PostUserHeader from "@/Components/app/PostUserHeader.vue";
-import { useForm } from "@inertiajs/vue3";
+import { useForm,usePage } from "@inertiajs/vue3";
 import { isImage } from "@/helpers.js";
 
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
@@ -190,6 +203,24 @@ const props = defineProps({
 
 const attachmentFiles = ref([]);
 
+const attachmentExtensions = usePage().props.attachmentExtensions;
+const attachmentErrors = ref([])
+
+const showExtensionsText = computed(() => {
+    for (let myFile of attachmentFiles.value) {
+        const file = myFile.file
+        let parts = file.name.split('.')
+        let ext = parts.pop().toLowerCase()
+        if (!attachmentExtensions.includes(ext)) {
+            return true
+        }
+    }
+
+    return false;
+})
+const formErrors = ref({});
+
+
 const form = useForm({
   id: null,
   body: "",
@@ -222,10 +253,24 @@ function closeModal() {
   resetModal();
 }
 
+function processErrors(errors) {
+  formErrors.value = errors
+    for (const key in errors) {
+        if (key.includes('.')) {
+            const [, index] = key.split('.')
+            attachmentErrors.value[index] = errors[key]
+        }
+    }
+}
+
 function resetModal() {
   form.reset();
-  attachmentFiles.value = [];
-  // props.post.attachments.forEach(file => file.deleted = false)
+  formErrors.value = {}
+  attachmentFiles.value = []
+  attachmentErrors.value = [];
+  if (props.post.attachments) {
+    props.post.attachments.forEach(file => file.deleted = false)
+  }
 }
 
 function submit() {
@@ -238,6 +283,9 @@ function submit() {
       onSuccess: () => {
         closeModal();
       },
+      onError: (errors) => {
+        processErrors(errors)
+      }
     });
   } else {
     form.post(route("post.create"), {
@@ -245,13 +293,15 @@ function submit() {
       onSuccess: () => {
         closeModal();
       },
+      onError: (errors) => {
+        processErrors(errors)
+      }
     });
   }
 }
 
 async function onAttachmentChoose($event) {
-  console.log($event.target.files);
-  for (const file of $event.target.files) {
+   for (const file of $event.target.files) {
     const myFile = {
       file,
       url: await readFile(file),
