@@ -14,9 +14,9 @@
                 {{ errors.cover }}
             </div>
             <div class="group relative bg-white">
-                <img :src="coverImageSrc || user.cover_url || '/img/default_cover.jpg'"
+                <img :src="coverImageSrc || group.cover_url || '/img/default_cover.jpg'"
                      class="w-full h-[200px] object-cover">
-                <div class="absolute top-2 right-2 ">
+                <div v-if="isCurrentUserAdmin" class="absolute top-2 right-2 ">
                     <button
                         v-if="!coverImageSrc"
                         class="bg-gray-50 hover:bg-gray-100 text-gray-800 py-1 px-2 text-xs flex items-center opacity-0 group-hover:opacity-100">
@@ -51,24 +51,24 @@
                 <div class="flex">
                     
                     <div class="flex items-center justify-center relative group/avatar -mt-[64px] ml-[48px] w-[128px] h-[128px] rounded-full">
-                        <img :src="avatarImageSrc || user.avatar_url || '/img/default_avatar.webp'"
+                        <img :src="thumbnailImageSrc || group.thumbnail_url || '/img/default_avatar.webp'"
                              class="w-full h-full object-cover rounded-full">
                         <button
-                            v-if="!avatarImageSrc"
+                            v-if="isCurrentUserAdmin && !thumbnailImageSrc"
                             class="absolute left-0 top-0 right-0 bottom-0 bg-black/50 text-gray-200 rounded-full opacity-0 flex items-center justify-center group-hover/avatar:opacity-100">
                             <CameraIcon class="w-8 h-8"/>
 
                             <input type="file" class="absolute left-0 top-0 bottom-0 right-0 opacity-0"
-                                   @change="onAvatarChange"/>
+                                   @change="onThumbnailChange"/>
                         </button>
-                        <div v-else class="absolute top-1 right-0 flex flex-col gap-2">
+                        <div v-else-if="isCurrentUserAdmin" class="absolute top-1 right-0 flex flex-col gap-2">
                             <button
-                                @click="resetAvatarImage"
+                                @click="resetThurmbnailImage"
                                 class="w-7 h-7 flex items-center justify-center bg-red-500/80 text-white rounded-full">
                                 <XMarkIcon class="h-5 w-5"/>
                             </button>
                             <button
-                                @click="submitAvatarImage"
+                                @click="submitThurmbnailImage"
                                 class="w-7 h-7 flex items-center justify-center bg-emerald-500/80 text-white rounded-full">
                                 <CheckCircleIcon class="h-5 w-5"/>
                             </button>
@@ -76,8 +76,11 @@
                     </div>
 
                     <div class="flex justify-between items-center flex-1 p-4">
-                        <h2 class="font-bold text-lg">{{ user.name }}</h2>
-                        
+                        <h2 class="font-bold text-lg">{{ group.name }}</h2>
+
+                        <PrimaryButton v-if="isCurrentUserAdmin">Invite Users</PrimaryButton>
+                        <PrimaryButton v-if="!group.role && group.auto_approval">Join to Group</PrimaryButton>
+                        <PrimaryButton v-if="!group.role && !group.auto_approval">Request to join</PrimaryButton>
                     </div>
                 </div>
             </div>
@@ -96,9 +99,6 @@
                         <Tab v-slot="{ selected }" as="template">
                             <TabItem text="Photos" :selected="selected"/>
                         </Tab>
-                        <Tab v-if="isMyProfile" v-slot="{ selected }" as="template">
-                            <TabItem text="My Profile" :selected="selected"/>
-                        </Tab>
 
                     </TabList>
 
@@ -113,11 +113,7 @@
                             Followings
                         </TabPanel>
                         <TabPanel class="bg-white p-3 shadow">
-                            Photos  <pre>{{authUser}}</pre>  
-                            <pre>{{ props.user.data }}</pre>
-                        </TabPanel>
-                        <TabPanel v-if="isMyProfile">
-                            <Edit :must-verify-email="mustVerifyEmail" :status="status"/>
+                            Photos  
                         </TabPanel>
                     </TabPanels>
                 </TabGroup>
@@ -133,41 +129,34 @@ import {TabGroup, TabList, Tab, TabPanels, TabPanel} from '@headlessui/vue'
 import {usePage} from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import TabItem from "@/Pages/Profile/Partials/TabItem.vue";
-import Edit from "@/Pages/Profile/Edit.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
 import {useForm} from '@inertiajs/vue3'
+import PrimaryButton from "@/Components/PrimaryButton.vue";
+
 
 const imagesForm = useForm({
-    avatar: null,
+    thumbnail: null,
     cover: null,
 })
 
 const showNotification = ref(true)
 const coverImageSrc = ref('')
-const avatarImageSrc = ref('')
-
+const thumbnailImageSrc = ref('')
 const authUser = usePage().props.auth.user;
 
-const isMyProfile = computed(() => authUser && authUser.id === props.user.id)
+
+const isCurrentUserAdmin = computed(() => props.group.role === 'admin')
 
 const props = defineProps({
     errors: Object,
-    mustVerifyEmail: {
-        type: Boolean,
-    },
-    status: {
-        type: String,
-    },
     success: {
         type: String,
     },
-    user: {
+    group: {
         type: Object
     }
 });
 
 function onCoverChange(event) {
-    console.log(event.target.files[0]);
     imagesForm.cover = event.target.files[0]
     if (imagesForm.cover) {
         const reader = new FileReader()
@@ -184,9 +173,9 @@ function resetCoverImage() {
 }
 
 function submitCoverImage() {
-    imagesForm.post(route('profile.updateImages'), {
-        onSuccess: (user) => {
-            showNotification.value = true
+    imagesForm.post(route('group.updateImages',props.group.slug), {
+        onSuccess: () => {
+            showNotification.value = true;
             resetCoverImage()
             setTimeout(() => {
                 showNotification.value = false
@@ -198,27 +187,27 @@ function submitCoverImage() {
 
 
 
-function onAvatarChange(event) {
-    imagesForm.avatar = event.target.files[0]
-    if (imagesForm.avatar) {
+function onThumbnailChange(event) {
+    imagesForm.thumbnail = event.target.files[0]
+    if (imagesForm.thumbnail) {
         const reader = new FileReader()
         reader.onload = () => {
-            avatarImageSrc.value = reader.result;
+            thumbnailImageSrc.value = reader.result;
         }
-        reader.readAsDataURL(imagesForm.avatar)
+        reader.readAsDataURL(imagesForm.thumbnail)
     }
 }
 
-function resetAvatarImage() {
-    imagesForm.avatar = null;
-    avatarImageSrc.value = null
+function resetThurmbnailImage() {
+    imagesForm.thumbnail = null;
+    thumbnailImageSrc.value = null
 }
 
-function submitAvatarImage() {
-    imagesForm.post(route('profile.updateImages'), {
-        onSuccess: (user) => {
-            showNotification.value = true
-            resetAvatarImage()
+function submitThurmbnailImage() {
+    imagesForm.post(route('group.updateImages', props.group.slug), {
+        onSuccess: () => {
+            showNotification.value = true;
+            resetThurmbnailImage()
             setTimeout(() => {
                 showNotification.value = false
             }, 3000)
