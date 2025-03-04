@@ -31,7 +31,7 @@ const show = computed({
 })
 
 
-const emit = defineEmits(['update:modelValue', 'hide'])
+const emit = defineEmits(['update:modelValue', 'hide', 'create'])
 
 
 function closeModal() {
@@ -47,9 +47,10 @@ function resetModal() {
 
 function submit() {
     axiosClient.post(route('group.create'), form)
-        .then(res => {
-            console.log(res)
+        .then(data => {
             closeModal()
+            console.log(data)
+            emit("create",data)
         })
 }
 
