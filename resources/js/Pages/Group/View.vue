@@ -93,11 +93,11 @@
                         <Tab v-slot="{ selected }" as="template">
                             <TabItem text="Posts" :selected="selected"/>
                         </Tab>
-                        <Tab v-slot="{ selected }" as="template">
-                            <TabItem text="Followers" :selected="selected"/>
+                        <Tab v-if="isJoinedToGroup" v-slot="{ selected }" as="template">
+                            <TabItem text="Users" :selected="selected"/>
                         </Tab>
-                        <Tab v-slot="{ selected }" as="template">
-                            <TabItem text="Followings" :selected="selected"/>
+                        <Tab v-if="isCurrentUserAdmin" v-slot="{ selected }" as="template">
+                            <TabItem text="Pending Requests" :selected="selected"/>
                         </Tab>
                         <Tab v-slot="{ selected }" as="template">
                             <TabItem text="Photos" :selected="selected"/>
@@ -109,11 +109,30 @@
                         <TabPanel class="bg-white p-3 shadow">
                             Posts
                         </TabPanel>
-                        <TabPanel class="bg-white p-3 shadow">
-                            Followers
+                        <TabPanel v-if="isJoinedToGroup">
+                            <div class="mb-3">
+                                <TextInput :model-value="searchKeyword" placeholder="Type to search" class="w-full"/>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <UserListItem v-for="user of users"
+                                              :user="user"
+                                              :key="user.id"
+                                              class="shadow rounded-lg"/>
+                            </div>
                         </TabPanel>
-                        <TabPanel class="bg-white p-3 shadow">
-                            Followings
+                        <TabPanel v-if="isCurrentUserAdmin" class="">
+                            <div v-if="requests.length" class="grid grid-cols-2 gap-3">
+                                <UserListItem v-for="user of requests"
+                                              :user="user"
+                                              :key="user.id"
+                                              :for-approve="true"
+                                              class="shadow rounded-lg"
+                                              @approve="approveUser"
+                                              @reject="rejectUser"/>
+                            </div>
+                            <div class="py-8 text-center">
+                                There are no pending requests.
+                            </div>
                         </TabPanel>
                         <TabPanel class="bg-white p-3 shadow">
                             Photos  
@@ -137,6 +156,8 @@ import TabItem from "@/Pages/Profile/Partials/TabItem.vue";
 import {useForm} from '@inertiajs/vue3'
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import InviteUserModal from "@/Pages/Group/InviteUserModal.vue";
+import UserListItem from "@/Components/app/UserListItem.vue";
+import TextInput from "@/Components/TextInput.vue";
 
 
 const imagesForm = useForm({
@@ -152,6 +173,7 @@ const showInviteUserModal = ref(false);
 
 
 const isCurrentUserAdmin = computed(() => props.group.role === 'admin')
+const isJoinedToGroup = computed(() => props.group.role && props.group.status === 'approved')
 
 const props = defineProps({
     errors: Object,
@@ -160,7 +182,9 @@ const props = defineProps({
     },
     group: {
         type: Object
-    }
+    },
+    users: Array,
+    requests: Array
 });
 
 function onCoverChange(event) {
@@ -227,6 +251,23 @@ function joinToGroup() {
     const form = useForm({})
 
     form.post(route('group.join', props.group.slug))
+}
+
+
+function approveUser(user) {
+    const form = useForm({
+        user_id: user.id,
+        action: 'approve'
+    })
+    form.post(route('group.approveRequest', props.group.slug))
+}
+
+function rejectUser(user) {
+    const form = useForm({
+        user_id: user.id,
+        action: 'reject'
+    })
+    form.post(route('group.approveRequest', props.group.slug))
 }
 
 
