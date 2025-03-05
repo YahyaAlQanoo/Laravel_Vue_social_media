@@ -45,11 +45,21 @@ class Group extends Model
         ->exists();
     }
 
+    public function hasApprovedUser($userId): bool
+    {
+        return GroupUser::query()
+            ->where('user_id', $userId)
+            ->where('group_id', $this->id)
+            ->where('status', GroupUserStatus::APPROVED->value)
+            ->exists();
+    }
+
+
     public function isOwner($userId): bool
     {
         return $this->user_id == $userId;
     }
-    
+
     public function adminUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'group_users')

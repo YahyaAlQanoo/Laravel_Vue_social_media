@@ -48,6 +48,11 @@
                     :show-time="false"
                     class="mb-4"
                   />
+                  
+                  <div v-if="formErrors.group_id" class="bg-red-400 py-2 px-3 rounded text-white mb-3">
+                                        {{formErrors.group_id}}
+                                    </div>
+
                   <ckeditor
                     :editor="editor"
                     v-model="form.body"
@@ -199,6 +204,11 @@ const props = defineProps({
     required: true,
   },
   modelValue: Boolean,
+  group: {
+    type: Object,
+    default: null
+  },
+
 });
 
 const attachmentFiles = ref([]);
@@ -224,6 +234,7 @@ const formErrors = ref({});
 const form = useForm({
   id: null,
   body: "",
+  group_id: null,
   attachments: [],
   deleted_file_ids: [],
   _method: "POST",
@@ -274,6 +285,10 @@ function resetModal() {
 }
 
 function submit() {
+  if (props.group) {
+    form.group_id = props.group.id
+  }
+
   form.attachments = attachmentFiles.value.map((myFile) => myFile.file);
 
   if (props.post.id) {
