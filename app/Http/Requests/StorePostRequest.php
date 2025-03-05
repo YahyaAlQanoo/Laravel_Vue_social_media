@@ -9,6 +9,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\File;
 
+
 class StorePostRequest extends FormRequest
 {
 
@@ -30,14 +31,16 @@ class StorePostRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'body' => ['nullable', 'string'],
             'user_id' => ['numeric'],
-            'attachments' => ['array|max:50',
+            'attachments' => [
+                'array',
+                'max:50',
                 function ($attribute, $value, $fail) {
                     // Custom rule to check the total size of all files
                     $totalSize = collect($value)->sum(fn(UploadedFile $file) => $file->getSize());
@@ -49,7 +52,7 @@ class StorePostRequest extends FormRequest
             ],
             'attachments.*' => [
                 'file',
-                File::types(self::$extensions)
+                File::types(self::$extensions),
             ],
             'group_id' => ['nullable', 'exists:groups,id', function($attribute, $value, \Closure $fail) {
                 $groupUser = GroupUser::where('user_id', Auth::id())

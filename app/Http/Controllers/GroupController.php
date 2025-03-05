@@ -74,7 +74,7 @@ class GroupController extends Controller
         return Inertia::render('Group/View', [
             'success' => session('success'),
             'group' => new GroupResource($group),
-            'posts' => $posts,
+            'posts' => $posts   ,
             'users' => GroupUserResource::collection($users),
             'requests' => UserResource::collection($requests)
         ]);
