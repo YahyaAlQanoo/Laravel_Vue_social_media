@@ -76,7 +76,20 @@
                     </div>
 
                     <div class="flex justify-between items-center flex-1 p-4">
-                        <h2 class="font-bold text-lg">{{ user.name }}</h2>
+                        <div>
+                            <h2 class="font-bold text-lg">{{ user.name }}</h2>
+                            <p class="text-xs text-gray-500">{{followerCount}} follower(s)</p>
+                        </div>
+
+                        <div>
+                            <PrimaryButton v-if="!isCurrentUserFollower" @click="followUser">
+                                Follow User
+                            </PrimaryButton>
+                            <DangerButton v-else @click="followUser">
+                                Unfollow User
+                            </DangerButton>
+                        </div>
+
                         
                     </div>
                 </div>
@@ -135,6 +148,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import TabItem from "@/Pages/Profile/Partials/TabItem.vue";
 import Edit from "@/Pages/Profile/Edit.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
+import DangerButton from "@/Components/DangerButton.vue";
 import {useForm} from '@inertiajs/vue3'
 
 const imagesForm = useForm({
@@ -163,7 +177,9 @@ const props = defineProps({
     },
     user: {
         type: Object
-    }
+    },
+    isCurrentUserFollower: Boolean,
+    followerCount: Number,
 });
 
 function onCoverChange(event) {
@@ -226,6 +242,17 @@ function submitAvatarImage() {
     })
 }
 
+
+
+function followUser() {
+    const form = useForm({
+        follow: !props.isCurrentUserFollower
+    })
+
+    form.post(route('user.follow', props.user.id), {
+        preserveScroll: true
+    })
+}
 
 
 
