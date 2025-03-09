@@ -130,7 +130,8 @@
                                               :show-role-dropdown="isCurrentUserAdmin"
                                               :disable-role-dropdown="group.user_id === user.id"
                                               class="shadow rounded-lg"
-                                              @role-change="onRoleChange"/>
+                                              @role-change="onRoleChange"
+                                              @delete="deleteUser"/> 
                             </div>
                         </TabPanel>
                         <TabPanel v-if="isCurrentUserAdmin" class="">
@@ -310,6 +311,20 @@ function rejectUser(user) {
     })
 }
 
+function deleteUser(user) {
+    console.log("111")
+    if (!window.confirm(`Are you sure you want to remove user "${user.name}" from this group?`)) {
+        return false;
+    }
+
+    const form = useForm({
+        user_id: user.id,
+    })
+    
+    form.delete(route('group.removeUser', props.group.slug), {
+        preserveScroll: true
+    })
+}
 
 function onRoleChange(user, role) {
     console.log(user, role)
