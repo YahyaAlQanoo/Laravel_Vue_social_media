@@ -2,7 +2,14 @@
 import TextInput from "@/Components/TextInput.vue";
 import FollowingItem from "@/Components/app/FollowingItem.vue";
 import {ref} from "vue";
+import UserListItem from "./UserListItem.vue";
 const searchKeyword = ref('')
+
+defineProps({
+    users: Array
+})
+
+
 </script>
 <template>
     <TextInput :model-value="searchKeyword" placeholder="Type to search" class="w-full mt-3"/>
@@ -11,48 +18,10 @@ const searchKeyword = ref('')
             You don't have friends yet.
         </div>
         <div v-else>
-            <FollowingItem image="/images/yahya.jpg" 
-                           title="John Doe"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/avatar.jpg"
-                           title="Elon Musk"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/yahya.jpg"
-                           title="John Doe"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/avatar.jpg"
-                           title="Elon Musk"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/yahya.jpg"
-                           title="John Doe"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/avatar.jpg"
-                           title="Elon Musk"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/yahya.jpg"
-                           title="John Doe"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/avatar.jpg"
-                           title="Elon Musk"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/yahya.jpg"
-                           title="John Doe"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/avatar.jpg"
-                           title="Elon Musk"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/yahya.jpg"
-                           title="John Doe"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/avatar.jpg"
-                           title="Elon Musk"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/yahya.jpg"
-                           title="John Doe"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
-            <FollowingItem image="/images/avatar.jpg"
-                           title="Elon Musk"
-                           description="Lorem ipsum dolor sit amet, consectetur adipisicing elit."/>
+            <UserListItem v-for="user of users"
+                          :user="user"
+                          :key="user.id"
+                          class="rounded-lg"/>
         </div>
     </div>
 </template>
