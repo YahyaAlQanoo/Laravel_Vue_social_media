@@ -113,7 +113,10 @@
                         <TabPanel class="bg-white p-3 shadow">
                             <template v-if="posts">
                                 <CreatePost :group="group"/>
-                                <PostList :posts="posts.data" class="flex-1"/>
+                                <PostList v-if="posts.data.length" :posts="posts.data" class="flex-1"/>
+                                <div v-else class="py-8 text-center">
+                                    There are no posts in this group. Be the first and create it.
+                                </div>
                             </template>
                             <div v-else class="py-8 text-center">
                                 You don't have permission to view these posts.
@@ -158,8 +161,7 @@
                                     Submit
                                 </PrimaryButton>
                             </template>
-                            <div v-else v-html="group.description">
-
+                            <div v-else class="ck-content-output" v-html="group.about">
                             </div>
                         </TabPanel>
                     </TabPanels>

@@ -8,6 +8,31 @@ defineProps({
     form: Object
 })
 
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { Ckeditor } from "@ckeditor/ckeditor5-vue";
+
+const editor = ClassicEditor;
+const editorConfig = {
+  toolbar: [
+    "bold",
+    "italic",
+    "|",
+    "bulletedList",
+    "numberedList",
+    "|",
+    "heading",
+    "|",
+    "outdent",
+    "indent",
+    "|",
+    "link",
+    "|",
+    "blockQuote",
+  ],
+  licenseKey:
+    "eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NDE5OTY3OTksImp0aSI6IjcwNTZhMGVlLTVmM2ItNDM4My04NDA4LTZiYzM1NDc2ZmNiYyIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6Ijc3ZTc0NDY4In0.F_GHcB2aiZJmS2NPJqSovx6tShHlYwS9hO5NiITropP3-HffJuQV_wiBq3vSK0C2yN-P1zgvFAhoue5UTERTlw",
+};
+
 </script>
 
 <template>
@@ -32,7 +57,7 @@ defineProps({
     <div class="mb-3">
         <label>About Group</label>
 
-        <InputTextarea v-model="form.about" class="w-full"/>
+        <Ckeditor :editor="editor" v-model="form.about" :config="editorConfig"></Ckeditor>
     </div>
 </template>
 

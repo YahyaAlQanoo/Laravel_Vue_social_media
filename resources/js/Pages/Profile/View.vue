@@ -81,7 +81,7 @@
                             <p class="text-xs text-gray-500">{{followerCount}} follower(s)</p>
                         </div>
 
-                        <div>
+                        <div v-if="authUser.id !== user.id">
                             <PrimaryButton v-if="!isCurrentUserFollower" @click="followUser">
                                 Follow User
                             </PrimaryButton>
@@ -94,7 +94,7 @@
                     </div>
                 </div>
             </div>
-            <div class="border-t">
+            <div class="border-t ">
                 <TabGroup>
                     <TabList class="flex bg-white">
                         <Tab v-slot="{ selected }" as="template">
@@ -116,14 +116,44 @@
                     </TabList>
 
                     <TabPanels class="mt-2">
-                        <TabPanel class="bg-white p-3 shadow">
-                            Posts
+                        <TabPanel>
+                            <template v-if="posts">
+                                <CreatePost />
+                                <PostList :posts="posts.data" class="flex-1"/>
+                            </template>
+                            <div v-else class="py-8 text-center">
+                                You don't have permission to view these posts.
+                            </div>
                         </TabPanel>
                         <TabPanel class="bg-white p-3 shadow">
-                            Followers
+                            <div class="mb-3">
+                                <TextInput :model-value="searchFollowersKeyword" placeholder="Type to search"
+                                           class="w-full"/>
+                            </div>
+                            <div v-if="followers.length" class="grid grid-cols-2 gap-3">
+                                <UserListItem v-for="user of followers"
+                                              :user="user"
+                                              :key="user.id"
+                                              class="shadow rounded-lg"/>
+                            </div>
+                            <div v-else class="text-center py-8">
+                                User does not have followers.
+                            </div>
                         </TabPanel>
                         <TabPanel class="bg-white p-3 shadow">
-                            Followings
+                            <div class="mb-3">
+                                <TextInput :model-value="searchFollowingsKeyword" placeholder="Type to search"
+                                           class="w-full"/>
+                            </div>
+                            <div v-if="followings.length" class="grid grid-cols-2 gap-3">
+                                <UserListItem v-for="user of followings"
+                                              :user="user"
+                                              :key="user.id"
+                                              class="shadow rounded-lg"/>
+                            </div>
+                            <div v-else class="text-center py-8">
+                                The user is not following to anybody
+                            </div>
                         </TabPanel>
                         <TabPanel class="bg-white p-3 shadow">
                             Photos  <pre>{{authUser}}</pre>  
@@ -150,6 +180,11 @@ import Edit from "@/Pages/Profile/Edit.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
 import DangerButton from "@/Components/DangerButton.vue";
 import {useForm} from '@inertiajs/vue3'
+import CreatePost from "@/Components/app/CreatePost.vue";
+import PostList from "@/Components/app/PostList.vue";
+import UserListItem from "@/Components/app/UserListItem.vue";
+import TextInput from "@/Components/TextInput.vue";
+
 
 const imagesForm = useForm({
     avatar: null,
@@ -159,6 +194,8 @@ const imagesForm = useForm({
 const showNotification = ref(true)
 const coverImageSrc = ref('')
 const avatarImageSrc = ref('')
+const searchFollowersKeyword = ref('')
+const searchFollowingsKeyword = ref('')
 
 const authUser = usePage().props.auth.user;
 
@@ -180,6 +217,9 @@ const props = defineProps({
     },
     isCurrentUserFollower: Boolean,
     followerCount: Number,
+    posts: Object,
+    followers: Array,
+    followings: Array,
 });
 
 function onCoverChange(event) {
