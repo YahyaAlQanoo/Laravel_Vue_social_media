@@ -2,7 +2,7 @@
 import {Menu, MenuButton, MenuItems, MenuItem} from '@headlessui/vue'
 import {PencilIcon, TrashIcon, EllipsisVerticalIcon} from '@heroicons/vue/20/solid'
 import {Disclosure, DisclosureButton, DisclosurePanel} from '@headlessui/vue'
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import PostUserHeader from "@/Components/app/PostUserHeader.vue";
 import ReadMoreReadLess from "@/Components/app/ReadMoreReadLess.vue";
 import EditDeleteDropdown from "@/Components/app/EditDeleteDropdown.vue";
@@ -26,6 +26,14 @@ const props = defineProps({
 const newCommentText = ref('')
 
 const emit = defineEmits(['editClick','attachmentClick'])
+
+const postBody = computed(() => props.post.body.replace(
+    /(#\w+)(?![^<]*<\/a>)/g,
+    (match, group) => {
+        const encodedGroup = encodeURIComponent(group);
+        return `<a href="/search/${encodedGroup}" class="hashtag">${group}</a>`;
+    })
+)
 
 function openEditModal(){
     emit('editClick', props.post)
@@ -121,7 +129,7 @@ function sendCommentReaction(comment) {
           
         </div>
         <div class="mb-3">
-            <ReadMoreReadLess :content="post.body" />
+            <ReadMoreReadLess :content="postBody" />
         </div>
         <div class="grid gap-3 mb-3" :class="[post.attachments.length === 1 ? 'grid-cols-1' : 'grid-cols-2']">
              
