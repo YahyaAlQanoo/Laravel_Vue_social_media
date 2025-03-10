@@ -80,7 +80,7 @@
                         : 'grid-cols-2',
                     ]"
                   >
-                    <template v-for="(myFile, ind) of computedAttachments">
+                    <div v-for="(myFile, ind) of computedAttachments">
                       <div :class="attachmentErrors[ind] ? 'border-red-500' : '' "  class=" border-2 group aspect-square bg-blue-100 flex flex-col items-center justify-center text-gray-500 relative" >
                         <!-- ❌ زر حذف المرفق -->
 
@@ -115,7 +115,7 @@
                         </div>
                       </div> 
                       <small class="text-red-500">{{ attachmentErrors[ind] }}</small>
-                    </template>
+                    </div>
                   </div>
                 </div>
 

@@ -156,8 +156,7 @@
                             </div>
                         </TabPanel>
                         <TabPanel class="bg-white p-3 shadow">
-                            Photos  <pre>{{authUser}}</pre>  
-                            <pre>{{ props.user.data }}</pre>
+                            <TabPhotos :photos="photos" />
                         </TabPanel>
                         <TabPanel v-if="isMyProfile">
                             <Edit :must-verify-email="mustVerifyEmail" :status="status"/>
@@ -184,6 +183,7 @@ import CreatePost from "@/Components/app/CreatePost.vue";
 import PostList from "@/Components/app/PostList.vue";
 import UserListItem from "@/Components/app/UserListItem.vue";
 import TextInput from "@/Components/TextInput.vue";
+import TabPhotos from './TabPhotos.vue';
 
 
 const imagesForm = useForm({
@@ -220,6 +220,7 @@ const props = defineProps({
     posts: Object,
     followers: Array,
     followings: Array,
+    photos: Array
 });
 
 function onCoverChange(event) {
