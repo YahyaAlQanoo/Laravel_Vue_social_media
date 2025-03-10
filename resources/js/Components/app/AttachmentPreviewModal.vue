@@ -8,7 +8,7 @@ import {
     DialogPanel,
     DialogTitle,
 } from '@headlessui/vue'
-import {isImage} from "@/helpers.js";
+import {isImage, isVideo} from "@/helpers.js";
 
 
 const props = defineProps({
@@ -102,6 +102,11 @@ function next() {
                                         <img v-if="isImage(attachment)"
                                              :src="attachment.url"
                                              class="max-w-full max-h-full"/>
+                                             
+                                        <div v-else-if="isVideo(attachment)" class="flex items-center">
+                                            <video :src="attachment.url" controls autoplay></video>
+                                        </div>
+
                                         <div v-else class="p-32 flex flex-col justify-center items-center text-gray-100">
                                             <PaperClipIcon class="w-10 h-10 mb-3"/>
 
